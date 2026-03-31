@@ -14,10 +14,13 @@ export type FfmpegPreviewStatus =
   | "skipped_kind";
 
 /**
- * 预览：后台 ffmpeg 生成 H.264+AAC / AAC，再作为 src；
- * loading 时返回 null（由界面显示等待）；失败或超限时用原始 blob。
+ * 预览：`useTranscodedPreview === false` 时直接用浏览器解码 `blob:`（易在用户点击播放时出声）；
+ * 为 `true` 时用 ffmpeg 转 H.264/AAC（兼容性好，但转码完成往往在「用户手势」之后，自动带声播放常被拦截）。
  */
-export function useFfmpegPreview(previewItem: Ref<MediaItem | null>) {
+export function useFfmpegPreview(
+  previewItem: Ref<MediaItem | null>,
+  useTranscodedPreview: Ref<boolean>,
+) {
   const status = ref<FfmpegPreviewStatus>("idle");
   const blobUrl = ref<string | null>(null);
 
@@ -35,8 +38,8 @@ export function useFfmpegPreview(previewItem: Ref<MediaItem | null>) {
   }
 
   watch(
-    previewItem,
-    (item) => {
+    [previewItem, useTranscodedPreview],
+    ([item, useTc]) => {
       const my = ++gen;
       revoke();
       if (!item) {
@@ -47,6 +50,11 @@ export function useFfmpegPreview(previewItem: Ref<MediaItem | null>) {
       const kind = getPreviewKind(item.file);
       if (kind !== "video" && kind !== "audio") {
         status.value = "skipped_kind";
+        return;
+      }
+
+      if (!useTc) {
+        status.value = "idle";
         return;
       }
 
@@ -70,10 +78,11 @@ export function useFfmpegPreview(previewItem: Ref<MediaItem | null>) {
     { immediate: true },
   );
 
-  /** loading 时为 null（不指向原始文件，避免先播浏览器再跳变） */
+  /** 浏览器模式：始终为源 blob URL；转码模式：loading 为 null，就绪为转码 blob，否则回退源 URL */
   const displayUrl: ComputedRef<string | null> = computed(() => {
     const item = previewItem.value;
     if (!item) return null;
+    if (!useTranscodedPreview.value) return item.url;
     if (status.value === "ready" && blobUrl.value) return blobUrl.value;
     if (status.value === "loading") return null;
     return item.url;

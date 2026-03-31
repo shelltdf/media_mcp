@@ -4,6 +4,7 @@
 
 - `ai-software-engineering/`：四阶段文档（概念/逻辑/物理/运维）。
 - `media-studio-vue/`：Vue 3 + Vite 实现（**不在**文档目录内）。
+- `scripts/`：统一脚本实现（`impl_vue.py`），根目录与各子目录的 `build.py` 等只做转发，避免重复维护逻辑（见 `scripts/README.md`）。
 
 ## 命令（实现目录内）
 
@@ -17,7 +18,7 @@
 
 ## 仓库根 Python 入口
 
-在项目根目录：`build.py`、`test.py`、`run.py`、`publish.py`、`dev.py`（封装 npm，便于统一入口）。
+在项目根目录：`build.py`、`test.py`、`run.py`、`publish.py`、`dev.py`。默认目标为 **Vue**（`python build.py` 等）。调度逻辑见 `scripts/repo_dispatch.py`，具体命令见 `scripts/impl_vue.py`。
 
 ## 依赖与许可证
 

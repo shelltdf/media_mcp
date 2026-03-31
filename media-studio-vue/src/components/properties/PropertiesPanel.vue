@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
-import type { MediaChannel } from "@/composables/mediaChannels";
+import type { MediaChannel, MediaChannelDetailRow } from "@/composables/mediaChannels";
 import { useFfmpegProbe } from "@/composables/useFfmpegProbe";
 import { useMediaLibrary } from "@/composables/useMediaLibrary";
 import { useMediaMetadata } from "@/composables/useMediaMetadata";
@@ -71,6 +71,29 @@ const dimensionsDisplay = computed(() => {
   }
   return null;
 });
+
+/** 通道卡片内：探针成功时用真实值覆盖「未知」占位文案 */
+function detailRowDisplay(
+  row: MediaChannelDetailRow,
+  ch: MediaChannel,
+): string {
+  const p = ffmpegProbe.value;
+  if (ch.kind === "audio") {
+    if (
+      row.valueKey === "channelDetail.sampleRateUnknown" &&
+      p?.audioSampleRate != null
+    ) {
+      return `${p.audioSampleRate} Hz`;
+    }
+    if (
+      row.valueKey === "channelDetail.channelLayoutUnknown" &&
+      p?.audioChannelLayout
+    ) {
+      return p.audioChannelLayout;
+    }
+  }
+  return t(row.valueKey, row.params ?? {});
+}
 </script>
 
 <template>
@@ -151,7 +174,7 @@ const dimensionsDisplay = computed(() => {
               :key="`${ch.id}-row-${idx}`"
             >
               <dt>{{ t(row.labelKey) }}</dt>
-              <dd>{{ t(row.valueKey, row.params ?? {}) }}</dd>
+              <dd>{{ detailRowDisplay(row, ch) }}</dd>
             </template>
             <template v-if="showMuxedDuration(ch)">
               <dt>{{ t("channelDetail.dtDuration") }}</dt>

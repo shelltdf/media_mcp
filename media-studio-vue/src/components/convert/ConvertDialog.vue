@@ -420,6 +420,13 @@ function startButtonTitle(): string | undefined {
               </div>
             </div>
 
+            <p
+              v-if="!isAudioOnlyFormat && !includeAudio"
+              class="convert-warn-audio"
+            >
+              {{ t("convert.warnNoAudioInOutput") }}
+            </p>
+
             <div v-if="!isAudioOnlyFormat" class="convert-group">
               <div class="convert-group-head">
                 <span class="convert-group-title">{{
@@ -684,6 +691,17 @@ function startButtonTitle(): string | undefined {
   line-height: 1.4;
   color: var(--text-muted, #888);
   font-weight: normal;
+}
+
+.convert-warn-audio {
+  margin: 0 0 8px;
+  padding: 8px 10px;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--text, #ccc);
+  background: rgba(255, 160, 60, 0.12);
+  border: 1px solid rgba(255, 160, 60, 0.35);
+  border-radius: 4px;
 }
 
 .convert-field {

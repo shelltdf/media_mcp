@@ -48,15 +48,29 @@ export function parseFfmpegInfoLog(log: string): FfmpegProbeResult {
     }
     if (/Stream\s+#\d+:\d+/.test(line) && /Audio:/.test(line)) {
       const codecM = line.match(/Audio:\s*([^,(]+)/);
-      if (codecM) out.audioCodec = codecM[1]!.trim().split(/\s+/)[0] ?? null;
+      if (codecM && !out.audioCodec) {
+        out.audioCodec = codecM[1]!.trim().split(/\s+/)[0] ?? null;
+      }
 
-      const hzM = line.match(/(\d+)\s*Hz/);
-      if (hzM) out.audioSampleRate = parseInt(hzM[1]!, 10);
+      /* 常见：48000 Hz；部分版本为 44100, stereo 无 Hz */
+      if (out.audioSampleRate == null) {
+        const hzM = line.match(/(\d+)\s*Hz/i);
+        if (hzM) out.audioSampleRate = parseInt(hzM[1]!, 10);
+      }
+      /* 例：pcm_s16le, 44100, stereo（无 Hz 字样） */
+      if (out.audioSampleRate == null && /Audio:/.test(line)) {
+        const m = line.match(
+          /,\s*(\d{4,6})\s*,\s*(mono|stereo|quad|fltp|s16\b|s32\b)/i,
+        );
+        if (m) out.audioSampleRate = parseInt(m[1]!, 10);
+      }
 
-      const layoutM = line.match(
-        /Hz,\s*(mono|stereo|quad|4\.0|5\.1|7\.1|unknown)/i,
-      );
-      if (layoutM) out.audioChannelLayout = layoutM[1]!.toLowerCase();
+      if (!out.audioChannelLayout) {
+        const layoutM = line.match(
+          /(?:Hz,\s*|,\s*)(mono|stereo|quad|4\.0|5\.1|7\.1|unknown)\b/i,
+        );
+        if (layoutM) out.audioChannelLayout = layoutM[1]!.toLowerCase();
+      }
     }
   }
 
