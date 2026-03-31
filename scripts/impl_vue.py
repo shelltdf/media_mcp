@@ -1,4 +1,7 @@
-"""media-studio-vue：npm 构建 / 测试 / 运行 / 发布（单一实现，供子目录薄脚本调用）。"""
+"""media-studio-vue：npm 构建 / 测试 / 运行 / 发布。
+
+由仓库根 `build.py` 等经 `scripts/repo_dispatch.py` 调度，或由 `media-studio-vue/` 下薄脚本直接调用。
+"""
 from __future__ import annotations
 
 import shutil
