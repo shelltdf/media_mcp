@@ -31,5 +31,6 @@
 ## 转换（ffmpeg.wasm）
 
 - 实现位于 `media-studio-vue/src/ffmpeg/`（加载）与 `useConversionJob.ts`（写文件 → `exec` → 读出并保存）。
+- **探针**（`probeMedia.ts` / `useFfmpegProbe`）与 **预览转码**（`previewTranscode.ts` / `useFfmpegPreview`）与 **转换为** 共用 **`ffmpegQueue.ts` 串行队列**，避免同一 FFmpeg 实例并行 `exec` 冲突。
 - **首次**执行转换时会从 CDN（`cdn.jsdelivr.net` 上 `@ffmpeg/core` 与锁定的 `0.12.6` 一致）下载 **ffmpeg-core.wasm**（体积较大，约数十 MB），需 **可用网络**；后续在同一会话内复用已加载实例。
 - 若需离线或内网部署，可将 `ffmpeg-core.js` / `ffmpeg-core.wasm` 拷入 `public/ffmpeg/` 并修改 `loadFFmpeg.ts` 中的 URL 为本地路径后再用 `toBlobURL` 加载。

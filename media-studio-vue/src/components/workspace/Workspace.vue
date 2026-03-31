@@ -1,15 +1,19 @@
 <script setup lang="ts">
-import { nextTick, ref, watch } from "vue";
+import { nextTick, ref, toRefs, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getPreviewKind } from "@/composables/previewKind";
 import { useLog } from "@/composables/useLog";
 import { useMediaLibrary } from "@/composables/useMediaLibrary";
 import { useImportMedia } from "@/composables/useImportMedia";
 import { useTimeline } from "@/composables/useTimeline";
+import { useFfmpegPreview } from "@/composables/useFfmpegPreview";
 
 const { t } = useI18n();
 const { log } = useLog();
 const { clear, previewItem, previewKind } = useMediaLibrary();
+const ffmpegPv = useFfmpegPreview(previewItem);
+const { status: ffmpegPreviewStatus, displayUrl: ffmpegDisplayUrl } =
+  toRefs(ffmpegPv);
 const { importMedia } = useImportMedia();
 const { clearClips } = useTimeline();
 
@@ -39,6 +43,7 @@ function tryAutoplay() {
     const v = videoRef.value;
     const a = audioRef.value;
     if (v && previewKind.value === "video") {
+      v.muted = false;
       void v.play().catch(() => {
         /* 无用户手势时可能被策略拒绝，保留控件手动播放 */
       });
@@ -49,11 +54,16 @@ function tryAutoplay() {
   });
 }
 
-watch([previewItem, previewKind], tryAutoplay, { flush: "post" });
+watch(
+  [previewItem, previewKind, ffmpegDisplayUrl],
+  tryAutoplay,
+  { flush: "post" },
+);
 
 function onVideoLoaded() {
   const v = videoRef.value;
   if (!v) return;
+  v.muted = false;
   void v.play().catch(() => {});
 }
 
@@ -80,27 +90,44 @@ defineExpose({ importMedia, newProject });
         <span class="preview-hint">{{ t("app.previewEmptyHint") }}</span>
       </template>
       <template v-else-if="previewKind === 'video'">
-        <video
-          :key="previewItem.id"
-          ref="videoRef"
-          class="preview-media"
-          controls
-          playsinline
-          :src="previewItem.url"
-          @loadeddata="onVideoLoaded"
-        />
-        <span class="preview-caption">{{ previewItem.name }}</span>
+        <p
+          v-if="ffmpegPreviewStatus === 'loading'"
+          class="preview-ffmpeg-msg"
+        >
+          {{ t("app.previewFfmpegLoading") }}
+        </p>
+        <template v-else-if="ffmpegDisplayUrl">
+          <video
+            :key="`${previewItem.id}-${ffmpegPreviewStatus}`"
+            ref="videoRef"
+            class="preview-media"
+            controls
+            playsinline
+            :src="ffmpegDisplayUrl"
+            @loadeddata="onVideoLoaded"
+          />
+          <span class="preview-caption">{{ previewItem.name }}</span>
+          <p class="preview-sound-hint">{{ t("app.previewSoundHintFfmpeg") }}</p>
+        </template>
       </template>
       <template v-else-if="previewKind === 'audio'">
-        <audio
-          :key="previewItem.id"
-          ref="audioRef"
-          class="preview-audio"
-          controls
-          :src="previewItem.url"
-          @loadeddata="onAudioLoaded"
-        />
-        <span class="preview-caption">{{ previewItem.name }}</span>
+        <p
+          v-if="ffmpegPreviewStatus === 'loading'"
+          class="preview-ffmpeg-msg"
+        >
+          {{ t("app.previewFfmpegLoading") }}
+        </p>
+        <template v-else-if="ffmpegDisplayUrl">
+          <audio
+            :key="`${previewItem.id}-${ffmpegPreviewStatus}`"
+            ref="audioRef"
+            class="preview-audio"
+            controls
+            :src="ffmpegDisplayUrl"
+            @loadeddata="onAudioLoaded"
+          />
+          <span class="preview-caption">{{ previewItem.name }}</span>
+        </template>
       </template>
       <template v-else-if="previewKind === 'image'">
         <img
@@ -205,5 +232,22 @@ defineExpose({ importMedia, newProject });
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.preview-sound-hint {
+  margin: 0;
+  max-width: 420px;
+  font-size: 10px;
+  line-height: 1.35;
+  color: var(--text-muted, #888);
+  text-align: center;
+}
+
+.preview-ffmpeg-msg {
+  margin: 0;
+  padding: 12px;
+  font-size: 12px;
+  color: var(--text-muted, #aaa);
+  text-align: center;
 }
 </style>

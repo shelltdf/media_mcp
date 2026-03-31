@@ -1,8 +1,8 @@
 import { reactive, ref, type Ref } from "vue";
-import type { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
-import { getLoadedFFmpeg } from "@/ffmpeg/loadFFmpeg";
+import { runFfmpegExclusive } from "@/ffmpeg/ffmpegQueue";
 import { buildFfmpegArgs } from "@/ffmpeg/buildFfmpegArgs";
+import { virtualInputName } from "@/ffmpeg/virtualInputName";
 
 /** 转换对话框收集的选项 */
 export interface ConversionSettings {
@@ -60,12 +60,6 @@ export interface ConversionJobState {
 }
 
 const FRAME_RE = /frame=\s*(\d+)/;
-
-function virtualInputName(file: File): string {
-  const m = file.name.match(/(\.[^.]+)$/);
-  const ext = m ? m[1] : ".bin";
-  return `input${ext}`;
-}
 
 async function writeOutputFile(
   data: Uint8Array,
@@ -161,7 +155,6 @@ export function useConversionJob(
 
     const inName = virtualInputName(ctx.inputFile);
     const outName = `out.${settings.outputFormat}`;
-    let ffmpeg: FFmpeg | null = null;
 
     const onProg = (ev: { progress: number }) => {
       const pct = Math.min(100, Number((ev.progress * 100).toFixed(2)));
@@ -177,10 +170,6 @@ export function useConversionJob(
     };
 
     try {
-      ffmpeg = await getLoadedFFmpeg();
-      ffmpeg.on("progress", onProg);
-      ffmpeg.on("log", onLog);
-
       const dur = settings.durationSec;
       const fps = settings.fpsEstimate > 0 ? settings.fpsEstimate : 30;
       progressDetail.totalFrames =
@@ -188,24 +177,44 @@ export function useConversionJob(
           ? Math.max(1, Math.round(dur * fps))
           : null;
 
-      await ffmpeg.writeFile(inName, await fetchFile(ctx.inputFile));
-      progressDetail.percent = 0;
-      progress.value = 0;
-      progressDetail.startedAt = Date.now();
-      progressDetail.elapsedSec = 0;
-      startTick();
+      await runFfmpegExclusive(async (ffmpeg) => {
+        ffmpeg.on("progress", onProg);
+        ffmpeg.on("log", onLog);
+        try {
+          await ffmpeg.writeFile(inName, await fetchFile(ctx.inputFile));
+          progressDetail.percent = 0;
+          progress.value = 0;
+          progressDetail.startedAt = Date.now();
+          progressDetail.elapsedSec = 0;
+          startTick();
 
-      const args = buildFfmpegArgs(settings, inName, outName);
-      const code = await ffmpeg.exec(args);
-      if (code !== 0) {
-        throw new Error(`ffmpeg exit code ${code}`);
-      }
+          const args = buildFfmpegArgs(settings, inName, outName);
+          const code = await ffmpeg.exec(args);
+          if (code !== 0) {
+            throw new Error(`ffmpeg exit code ${code}`);
+          }
 
-      const raw = await ffmpeg.readFile(outName);
-      if (!(raw instanceof Uint8Array)) {
-        throw new Error("Unexpected ffmpeg output (non-binary)");
-      }
-      await writeOutputFile(raw, settings.outputFileName, ctx.saveFileHandle);
+          const raw = await ffmpeg.readFile(outName);
+          if (!(raw instanceof Uint8Array)) {
+            throw new Error("Unexpected ffmpeg output (non-binary)");
+          }
+          await writeOutputFile(raw, settings.outputFileName, ctx.saveFileHandle);
+        } finally {
+          ffmpeg.off("progress", onProg);
+          ffmpeg.off("log", onLog);
+          try {
+            await ffmpeg.deleteFile(inName);
+          } catch {
+            /* ignore */
+          }
+          try {
+            await ffmpeg.deleteFile(outName);
+          } catch {
+            /* ignore */
+          }
+        }
+      });
+
       progressDetail.percent = 100;
       progress.value = 100;
       progressDetail.etaSec = 0;
@@ -217,20 +226,6 @@ export function useConversionJob(
       onError(msg);
     } finally {
       stopTick();
-      if (ffmpeg) {
-        ffmpeg.off("progress", onProg);
-        ffmpeg.off("log", onLog);
-        try {
-          await ffmpeg.deleteFile(inName);
-        } catch {
-          /* ignore */
-        }
-        try {
-          await ffmpeg.deleteFile(outName);
-        } catch {
-          /* ignore */
-        }
-      }
       running.value = false;
     }
   }

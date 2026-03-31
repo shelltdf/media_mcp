@@ -2,12 +2,14 @@
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
 import type { MediaChannel } from "@/composables/mediaChannels";
+import { useFfmpegProbe } from "@/composables/useFfmpegProbe";
 import { useMediaLibrary } from "@/composables/useMediaLibrary";
 import { useMediaMetadata } from "@/composables/useMediaMetadata";
 
 const { t } = useI18n();
 const { selectedItem } = useMediaLibrary();
 const { meta } = useMediaMetadata(selectedItem);
+const { status: probeStatus, probe: ffmpegProbe } = useFfmpegProbe(selectedItem);
 
 function formatBytes(n: number): string {
   if (n < 1024) return `${n} B`;
@@ -33,23 +35,42 @@ const modifiedStr = computed(() => {
   }
 });
 
+const muxedDurationSec = computed(() => {
+  const p = ffmpegProbe.value;
+  if (p?.durationSec != null && Number.isFinite(p.durationSec)) return p.durationSec;
+  const m = meta.value;
+  if (m.durationSec != null && Number.isFinite(m.durationSec)) return m.durationSec;
+  return null;
+});
+
 function showMuxedDuration(ch: MediaChannel): boolean {
   return (
-    (ch.kind === "video" || ch.kind === "audio") &&
-    meta.value.durationSec != null &&
-    Number.isFinite(meta.value.durationSec)
+    (ch.kind === "video" || ch.kind === "audio") && muxedDurationSec.value != null
   );
 }
 
 function showVideoResolution(ch: MediaChannel): boolean {
-  return (
-    ch.kind === "video" &&
-    meta.value.videoWidth != null &&
-    meta.value.videoHeight != null &&
-    meta.value.videoWidth > 0 &&
-    meta.value.videoHeight > 0
-  );
+  return ch.kind === "video" && dimensionsDisplay.value != null;
 }
+
+const durationDisplay = computed(() => {
+  const p = ffmpegProbe.value;
+  const m = meta.value;
+  const sec = p?.durationSec ?? m.durationSec ?? null;
+  return formatTime(sec);
+});
+
+const dimensionsDisplay = computed(() => {
+  const p = ffmpegProbe.value;
+  if (p?.videoWidth && p?.videoHeight) {
+    return `${p.videoWidth} × ${p.videoHeight}`;
+  }
+  const m = meta.value;
+  if (m.videoWidth && m.videoHeight) {
+    return `${m.videoWidth} × ${m.videoHeight}`;
+  }
+  return null;
+});
 </script>
 
 <template>
@@ -72,11 +93,40 @@ function showVideoResolution(ch: MediaChannel): boolean {
         <dd>{{ modifiedStr }}</dd>
 
         <dt>{{ t("properties.duration") }}</dt>
-        <dd>{{ formatTime(meta.durationSec) }}</dd>
+        <dd>{{ durationDisplay }}</dd>
 
-        <template v-if="meta.videoWidth && meta.videoHeight">
+        <template v-if="dimensionsDisplay">
           <dt>{{ t("properties.dimensions") }}</dt>
-          <dd>{{ meta.videoWidth }} × {{ meta.videoHeight }}</dd>
+          <dd>{{ dimensionsDisplay }}</dd>
+        </template>
+
+        <template v-if="probeStatus === 'loading'">
+          <dt>{{ t("properties.ffmpegProbe") }}</dt>
+          <dd>{{ t("properties.probeLoading") }}</dd>
+        </template>
+        <template v-else-if="probeStatus === 'skipped_size'">
+          <dt>{{ t("properties.ffmpegProbe") }}</dt>
+          <dd>{{ t("properties.probeSkippedSize") }}</dd>
+        </template>
+        <template v-else-if="probeStatus === 'error'">
+          <dt>{{ t("properties.ffmpegProbe") }}</dt>
+          <dd>{{ t("properties.probeError") }}</dd>
+        </template>
+        <template v-else-if="ffmpegProbe?.audioSampleRate">
+          <dt>{{ t("channelDetail.dtSampleRate") }}</dt>
+          <dd>{{ ffmpegProbe.audioSampleRate }} Hz</dd>
+        </template>
+        <template v-if="ffmpegProbe?.audioChannelLayout">
+          <dt>{{ t("channelDetail.dtChannelLayout") }}</dt>
+          <dd>{{ ffmpegProbe.audioChannelLayout }}</dd>
+        </template>
+        <template v-if="ffmpegProbe?.videoCodec">
+          <dt>{{ t("properties.probeVideoCodec") }}</dt>
+          <dd>{{ ffmpegProbe.videoCodec }}</dd>
+        </template>
+        <template v-if="ffmpegProbe?.audioCodec">
+          <dt>{{ t("properties.probeAudioCodec") }}</dt>
+          <dd>{{ ffmpegProbe.audioCodec }}</dd>
         </template>
 
         <dt v-if="meta.error">{{ t("properties.metaError") }}</dt>
@@ -105,15 +155,16 @@ function showVideoResolution(ch: MediaChannel): boolean {
             </template>
             <template v-if="showMuxedDuration(ch)">
               <dt>{{ t("channelDetail.dtDuration") }}</dt>
-              <dd>{{ formatTime(meta.durationSec) }}</dd>
+              <dd>{{ formatTime(muxedDurationSec) }}</dd>
             </template>
             <template v-if="showVideoResolution(ch)">
               <dt>{{ t("channelDetail.dtResolution") }}</dt>
-              <dd>{{ meta.videoWidth }} × {{ meta.videoHeight }}</dd>
+              <dd>{{ dimensionsDisplay }}</dd>
             </template>
           </dl>
         </section>
       </div>
+      <p class="properties-footnote">{{ t("properties.ffmpegScopeNote") }}</p>
     </template>
   </div>
 </template>
@@ -224,5 +275,14 @@ function showVideoResolution(ch: MediaChannel): boolean {
   line-height: 1.4;
   word-break: break-word;
   color: var(--text);
+}
+
+.properties-footnote {
+  margin: 10px 0 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  font-size: 10px;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 </style>

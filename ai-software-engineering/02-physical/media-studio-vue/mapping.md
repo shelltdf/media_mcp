@@ -14,6 +14,9 @@
 | 媒体库面板 | `media-studio-vue/src/components/media/MediaLibraryPanel.vue` |
 | 文件选择器 id（导入/导出记忆） | `media-studio-vue/src/constants/filePickerIds.ts` |
 | 转换对话框与 ffmpeg.wasm 任务 | `media-studio-vue/src/components/convert/ConvertDialog.vue`、`composables/useConversionJob.ts`、`ffmpeg/loadFFmpeg.ts`、`ffmpeg/buildFfmpegArgs.ts` |
+| ffmpeg 串行队列 | `media-studio-vue/src/ffmpeg/ffmpegQueue.ts` |
+| ffmpeg 探针（属性） | `media-studio-vue/src/composables/useFfmpegProbe.ts`、`ffmpeg/probeMedia.ts` |
+| ffmpeg 预览转码 | `media-studio-vue/src/composables/useFfmpegPreview.ts`、`ffmpeg/previewTranscode.ts` |
 | 属性面板 | `media-studio-vue/src/components/properties/PropertiesPanel.vue` |
 | 通道推断 | `media-studio-vue/src/composables/mediaChannels.ts` |
 | 媒体元数据（时长等） | `media-studio-vue/src/composables/useMediaMetadata.ts` |
