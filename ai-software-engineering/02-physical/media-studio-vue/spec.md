@@ -1,0 +1,32 @@
+# 物理规格：media-studio-vue
+
+## 构建与运行
+
+- **Node**：建议 LTS 20+。
+- **包管理**：npm（`package-lock.json`）。
+- **开发**：`npm run dev` 或 `dev.py`，默认 `http://localhost:5173`。
+- **生产构建**：`npm run build`，输出 `media-studio-vue/dist/`。
+
+## 界面行为（与实现对齐）
+
+- **SDI**：单主窗口布局；无 MDI 子窗口。
+- **菜单**：含「多语言」「主题」；主题默认 **跟随系统**，可选浅色/深色。
+- **状态栏**：可点击打开 Log；Log 为纯文本 + 全文复制。
+- **Dock**：左/右侧可折叠（纵缘条）；**底部时间线** 为 Dock（显示区在上、横缘条贴窗口最下，可折叠）。主行顺序：左 Dock | **分割条** | **客户区（仅预览）** | **分割条** | 右 Dock；**主客户区容器** 下为 **横向分割条** | 底部 Dock。各 Dock **标题栏** 提供 **折叠**、**最大化/还原**；**分割条** 拖动调整左右 Dock 宽度与底部 Dock 高度（`useDockLayout.ts`）。语义见 `detailed-design-ui-shell.md` 与 `.cursor/rules/window-gui-documentation.mdc`。
+
+## 日志 API（前端）
+
+- `log(level, message)`：`info` | `warn` | `error`（及可选 `debug`）。
+- 所有级别进入同一 Log 流；状态栏显示最近一条。
+
+## 占位行为
+
+- 「导入媒体」（工具栏与 **媒体库** 内按钮）：`input[type=file]` `multiple`，`accept` 由 `src/composables/mediaAccept.ts` 定义（含 `audio/*`、`video/*`、`image/*` 及视频/音频/图片/MIDI/字幕等扩展名）。导入后为每条素材保留 `File` 与 `URL.createObjectURL`（`useMediaLibrary`），清空项目时 `revokeObjectURL`。
+- **媒体库交互**：**单击** 选中素材 → 右侧 **属性** Dock（`PropertiesPanel.vue`）展示文件名、MIME、大小、修改时间、可选 **时长/分辨率**（音视频由 `useMediaMetadata` 异步探测）、以及 **推断通道列表**（`mediaChannels.ts` / `inferMediaChannels`）。**双击** 同时选中并设为当前 **预览** 目标；客户区 **预览** 根据 `previewKind.ts` 使用 `<video>` / `<audio>` / `<img>` / 文本 `<pre>` 等。
+- **拖拽到时间线**：自媒体库列表 **拖拽** 至时间线区域，`useTimeline` 按素材的 **通道**（视频 / 音频 / 字幕 / 数据）各生成一条 **片段**，显示在对应 **轨行**（`TimelinePanel.vue` 四行：video / audio / subtitle / data）。同素材可多次拖入以重复添加片段。
+- **时间线**：位于 **底部 Dock**；含轨行、片段块、缩放滑块占位。
+
+## 错误与边界
+
+- 不支持的文件类型：日志 **warn**，不崩溃。
+- 构建失败：非零退出码（npm / test 脚本约定）。

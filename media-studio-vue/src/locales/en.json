@@ -1,0 +1,77 @@
+{
+  "app": {
+    "title": "Media Studio",
+    "mediaLibrary": "Media Library",
+    "properties": "Properties",
+    "timeline": "Timeline",
+    "preview": "Preview",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "importMedia": "Import Media",
+    "importMediaHint": "Import video, audio, images, MIDI, subtitles (multi-select)",
+    "previewDblClickHint": "Double-click to preview here",
+    "previewEmptyHint": "Double-click an item in the media library to preview",
+    "previewUnsupported": "This format cannot be previewed in the browser",
+    "previewMidiHint": "Open MIDI files in an external sequencer",
+    "previewTextError": "(Failed to read text)",
+    "newProject": "New Project",
+    "zoom": "Zoom"
+  },
+  "mediaLibrary": {
+    "rowHint": "Click to select (properties), double-click to preview, drag to timeline"
+  },
+  "properties": {
+    "empty": "Click an item in the media library to see properties",
+    "fileName": "File name",
+    "mime": "MIME type",
+    "size": "Size",
+    "modified": "Modified",
+    "duration": "Duration",
+    "dimensions": "Resolution",
+    "metaError": "Metadata",
+    "metaErrorHint": "Could not read some fields",
+    "channels": "Data channels (inferred)"
+  },
+  "channelKind": {
+    "video": "Video",
+    "audio": "Audio",
+    "subtitle": "Subtitle",
+    "data": "Data"
+  },
+  "timeline": {
+    "dropHint": "Drag from media library: one clip per channel on each track",
+    "droppedLog": "Timeline: added {name} ({n} channel clips)"
+  },
+  "dock": {
+    "collapse": "Collapse panel",
+    "maximize": "Maximize",
+    "restore": "Restore",
+    "collapseShort": "−",
+    "maximizeShort": "□",
+    "restoreShort": "❐",
+    "splitterVertical": "Drag to resize dock width",
+    "splitterHorizontal": "Drag to resize bottom dock height"
+  },
+  "menu": {
+    "file": "File",
+    "edit": "Edit",
+    "view": "View",
+    "language": "Language",
+    "theme": "Theme",
+    "help": "Help",
+    "langZh": "中文",
+    "langEn": "English",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "Match system"
+  },
+  "log": {
+    "title": "Log",
+    "copyAll": "Copy all",
+    "close": "Close",
+    "empty": "(No log entries)"
+  },
+  "status": {
+    "ready": "Ready"
+  }
+}

@@ -1,0 +1,56 @@
+:root {
+  --bg-title: #f0f0f0;
+  --bg-menu: #f3f3f3;
+  --bg-toolbar: #e8e8e8;
+  --bg-workspace: #fafafa;
+  --bg-panel: #ececec;
+  --bg-status: #0078d4;
+  --text: #1a1a1a;
+  --text-muted: #555;
+  --border: #c8c8c8;
+  --accent: #0078d4;
+  --preview-bg: #111;
+  --timeline-bg: #ddd;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  color: var(--text);
+}
+
+[data-theme="dark"] {
+  --bg-title: #2d2d2d;
+  --bg-menu: #252526;
+  --bg-toolbar: #333333;
+  --bg-workspace: #1e1e1e;
+  --bg-panel: #2a2a2b;
+  --bg-status: #0e639c;
+  --text: #e8e8e8;
+  --text-muted: #aaa;
+  --border: #3c3c3c;
+  --accent: #3794ff;
+  --preview-bg: #0a0a0a;
+  --timeline-bg: #333;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+}
+
+kbd.menu-accel {
+  opacity: 0.65;
+  margin-left: 0.35em;
+}

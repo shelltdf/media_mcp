@@ -1,0 +1,77 @@
+{
+  "app": {
+    "title": "媒体工作台",
+    "mediaLibrary": "媒体库",
+    "properties": "属性",
+    "timeline": "时间线",
+    "preview": "预览",
+    "collapse": "折叠",
+    "expand": "展开",
+    "importMedia": "导入媒体",
+    "importMediaHint": "导入视频、音频、图片、MIDI、字幕等文件（可多选）",
+    "previewDblClickHint": "双击在预览区打开",
+    "previewEmptyHint": "在媒体库中双击素材即可预览",
+    "previewUnsupported": "此格式无法在浏览器内预览（已记录文件）",
+    "previewMidiHint": "MIDI 文件请使用外部音序器播放",
+    "previewTextError": "（读取文本失败）",
+    "newProject": "新建项目",
+    "zoom": "缩放"
+  },
+  "mediaLibrary": {
+    "rowHint": "单击选中（属性），双击预览，可拖到时间线"
+  },
+  "properties": {
+    "empty": "在媒体库中单击素材可查看属性",
+    "fileName": "文件名",
+    "mime": "MIME 类型",
+    "size": "大小",
+    "modified": "修改时间",
+    "duration": "时长",
+    "dimensions": "分辨率",
+    "metaError": "元数据",
+    "metaErrorHint": "无法读取部分信息",
+    "channels": "数据通道（推断）"
+  },
+  "channelKind": {
+    "video": "视频",
+    "audio": "音频",
+    "subtitle": "字幕",
+    "data": "数据"
+  },
+  "timeline": {
+    "dropHint": "从媒体库拖入素材：按通道拆分为多轨片段",
+    "droppedLog": "时间线：已添加 {name}（{n} 条通道片段）"
+  },
+  "dock": {
+    "collapse": "折叠面板",
+    "maximize": "最大化",
+    "restore": "还原",
+    "collapseShort": "−",
+    "maximizeShort": "□",
+    "restoreShort": "❐",
+    "splitterVertical": "拖动调整左/右 Dock 宽度",
+    "splitterHorizontal": "拖动调整底部 Dock 高度"
+  },
+  "menu": {
+    "file": "文件",
+    "edit": "编辑",
+    "view": "视图",
+    "language": "多语言",
+    "theme": "主题",
+    "help": "帮助",
+    "langZh": "中文",
+    "langEn": "English",
+    "themeLight": "浅色",
+    "themeDark": "深色",
+    "themeSystem": "跟随系统"
+  },
+  "log": {
+    "title": "日志",
+    "copyAll": "复制全部",
+    "close": "关闭",
+    "empty": "（暂无日志）"
+  },
+  "status": {
+    "ready": "就绪"
+  }
+}
