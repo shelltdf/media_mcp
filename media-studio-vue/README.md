@@ -17,3 +17,7 @@
 ## 环境
 
 - Node.js LTS 20+ 推荐
+
+## 媒体转换
+
+- 使用 **ffmpeg.wasm**（`@ffmpeg/ffmpeg`）。首次转换时会从 CDN 拉取与依赖版本一致的 wasm（需联网）；详见 `ai-software-engineering/03-ops/developer-manual.md`。

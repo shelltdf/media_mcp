@@ -117,3 +117,19 @@ const ALL_EXT = [
 ];
 
 export const MEDIA_FILE_ACCEPT = [...MIME_GROUPS, ...ALL_EXT].join(",");
+
+/** `showOpenFilePicker` 的 `types`（与导入 accept 范围一致） */
+export function getMediaPickerTypesForOpen(): FilePickerAcceptType[] {
+  return [
+    {
+      description: "Media",
+      accept: {
+        "video/*": [...VIDEO_EXT],
+        "audio/*": [...AUDIO_EXT],
+        "image/*": [...IMAGE_EXT],
+        "audio/midi": [...MIDI_EXT],
+        "text/plain": [...SUBTITLE_EXT],
+      },
+    },
+  ];
+}

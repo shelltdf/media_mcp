@@ -6,11 +6,28 @@ interface FilePickerAcceptType {
   accept: Record<string, string[]>;
 }
 
+interface OpenFilePickerOptions {
+  multiple?: boolean;
+  excludeAcceptAllOption?: boolean;
+  /** 区分记忆位置：与另存为使用不同 id */
+  id?: string;
+  types?: FilePickerAcceptType[];
+}
+
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+  types?: FilePickerAcceptType[];
+  /** 区分记忆位置：与打开文件使用不同 id */
+  id?: string;
+}
+
 interface Window {
-  showSaveFilePicker?: (options?: {
-    suggestedName?: string;
-    types?: FilePickerAcceptType[];
-  }) => Promise<FileSystemFileHandle>;
+  showOpenFilePicker?: (
+    options?: OpenFilePickerOptions,
+  ) => Promise<FileSystemFileHandle[]>;
+  showSaveFilePicker?: (
+    options?: SaveFilePickerOptions,
+  ) => Promise<FileSystemFileHandle>;
 }
 
 declare module "*.vue" {

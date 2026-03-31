@@ -1,12 +1,40 @@
+import { FILE_PICKER_ID_IMPORT } from "@/constants/filePickerIds";
 import { useLog } from "@/composables/useLog";
 import { useMediaLibrary } from "@/composables/useMediaLibrary";
-import { MEDIA_FILE_ACCEPT } from "@/composables/mediaAccept";
+import {
+  getMediaPickerTypesForOpen,
+  MEDIA_FILE_ACCEPT,
+} from "@/composables/mediaAccept";
 
 export function useImportMedia() {
   const { log } = useLog();
   const { add } = useMediaLibrary();
 
   function importMedia() {
+    void importMediaAsync();
+  }
+
+  async function importMediaAsync() {
+    const openPicker = window.showOpenFilePicker;
+    if (typeof openPicker === "function") {
+      try {
+        const handles = await openPicker({
+          multiple: true,
+          id: FILE_PICKER_ID_IMPORT,
+          types: getMediaPickerTypesForOpen(),
+        });
+        for (const h of handles) {
+          const f = await h.getFile();
+          add(f);
+          log("info", `Imported: ${f.name} (${f.type || "unknown type"})`);
+        }
+        return;
+      } catch (e) {
+        if (e instanceof DOMException && e.name === "AbortError") return;
+        log("warn", `Open file picker fallback: ${String(e)}`);
+      }
+    }
+
     const input = document.createElement("input");
     input.type = "file";
     input.accept = MEDIA_FILE_ACCEPT;

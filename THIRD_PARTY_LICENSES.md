@@ -14,5 +14,8 @@ cd media-studio-vue && npm install && npm ls --omit=dev
 |----|------------------|------|
 | [vue](https://www.npmjs.com/package/vue) | MIT | 运行时框架 |
 | [vue-i18n](https://www.npmjs.com/package/vue-i18n) | MIT | 国际化 |
+| [@ffmpeg/ffmpeg](https://www.npmjs.com/package/@ffmpeg/ffmpeg) | MIT | 浏览器内 FFmpeg 封装（Web Worker） |
+| [@ffmpeg/util](https://www.npmjs.com/package/@ffmpeg/util) | MIT | `fetchFile` / `toBlobURL` 等工具 |
+| [@ffmpeg/core](https://www.npmjs.com/package/@ffmpeg/core) | MIT | 与上述版本匹配的 wasm 核心（运行时亦从 CDN 拉取同版本资源） |
 
 具体版本以 `media-studio-vue/package-lock.json` 解析为准。升级或新增生产依赖时请更新本表。

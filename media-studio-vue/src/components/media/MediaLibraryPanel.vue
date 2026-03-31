@@ -6,6 +6,7 @@ import { useMediaLibrary } from "@/composables/useMediaLibrary";
 import { useImportMedia } from "@/composables/useImportMedia";
 import { useTimeline } from "@/composables/useTimeline";
 import ConvertDialog from "@/components/convert/ConvertDialog.vue";
+import { FILE_PICKER_ID_EXPORT } from "@/constants/filePickerIds";
 
 const { t } = useI18n();
 const { log } = useLog();
@@ -126,9 +127,31 @@ function actionPreview() {
   closeMenu();
 }
 
-function actionExport() {
+async function actionExport() {
   const item = contextItem();
   if (!item) return;
+  const savePicker = window.showSaveFilePicker;
+  if (typeof savePicker === "function") {
+    try {
+      const handle = await savePicker({
+        id: FILE_PICKER_ID_EXPORT,
+        suggestedName: item.name,
+      });
+      const res = await fetch(item.url);
+      const buf = await res.arrayBuffer();
+      const w = await handle.createWritable();
+      await w.write(new Uint8Array(buf));
+      await w.close();
+      log("info", t("mediaLibrary.ctxLogExport", { name: item.name }));
+      closeMenu();
+      return;
+    } catch (e) {
+      if (e instanceof DOMException && e.name === "AbortError") {
+        closeMenu();
+        return;
+      }
+    }
+  }
   const a = document.createElement("a");
   a.href = item.url;
   a.download = item.name;

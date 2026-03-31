@@ -22,3 +22,14 @@
 ## 依赖与许可证
 
 - 生产依赖归集见仓库根 `THIRD_PARTY_LICENSES.md`；更新 `dependencies` 时请同步该文件。
+
+## 文件对话框位置（导入 / 导出）
+
+- 在支持 **File System Access API** 的浏览器（如 Chromium）中，`showOpenFilePicker` / `showSaveFilePicker` 传入不同的稳定 **`id`**（见 `media-studio-vue/src/constants/filePickerIds.ts`：`media-studio-import` 与 `media-studio-export`），便于浏览器**分别**记忆「上次打开目录」与「上次另存目录」。
+- 不支持该 API 时，导入仍回退为 `<input type="file">`，原始导出回退为带 `download` 的 `<a>`（由浏览器下载设置决定路径，应用无法区分记忆）。
+
+## 转换（ffmpeg.wasm）
+
+- 实现位于 `media-studio-vue/src/ffmpeg/`（加载）与 `useConversionJob.ts`（写文件 → `exec` → 读出并保存）。
+- **首次**执行转换时会从 CDN（`cdn.jsdelivr.net` 上 `@ffmpeg/core` 与锁定的 `0.12.6` 一致）下载 **ffmpeg-core.wasm**（体积较大，约数十 MB），需 **可用网络**；后续在同一会话内复用已加载实例。
+- 若需离线或内网部署，可将 `ffmpeg-core.js` / `ffmpeg-core.wasm` 拷入 `public/ffmpeg/` 并修改 `loadFFmpeg.ts` 中的 URL 为本地路径后再用 `toBlobURL` 加载。
