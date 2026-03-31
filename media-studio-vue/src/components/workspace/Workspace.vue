@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch } from "vue";
+import { nextTick, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import { getPreviewKind } from "@/composables/previewKind";
 import { useLog } from "@/composables/useLog";
@@ -14,6 +14,8 @@ const { importMedia } = useImportMedia();
 const { clearClips } = useTimeline();
 
 const previewText = ref("");
+const videoRef = ref<HTMLVideoElement | null>(null);
+const audioRef = ref<HTMLAudioElement | null>(null);
 
 watch(
   previewItem,
@@ -30,6 +32,36 @@ watch(
   },
   { immediate: true },
 );
+
+/** 预览切换后尝试自动播放（不强制静音；若浏览器拦截无用户手势的自动播放，请用控件播放以听到声音） */
+function tryAutoplay() {
+  void nextTick(() => {
+    const v = videoRef.value;
+    const a = audioRef.value;
+    if (v && previewKind.value === "video") {
+      void v.play().catch(() => {
+        /* 无用户手势时可能被策略拒绝，保留控件手动播放 */
+      });
+    }
+    if (a && previewKind.value === "audio") {
+      void a.play().catch(() => {});
+    }
+  });
+}
+
+watch([previewItem, previewKind], tryAutoplay, { flush: "post" });
+
+function onVideoLoaded() {
+  const v = videoRef.value;
+  if (!v) return;
+  void v.play().catch(() => {});
+}
+
+function onAudioLoaded() {
+  const a = audioRef.value;
+  if (!a) return;
+  void a.play().catch(() => {});
+}
 
 function newProject() {
   clear();
@@ -49,15 +81,25 @@ defineExpose({ importMedia, newProject });
       </template>
       <template v-else-if="previewKind === 'video'">
         <video
+          :key="previewItem.id"
+          ref="videoRef"
           class="preview-media"
           controls
           playsinline
           :src="previewItem.url"
+          @loadeddata="onVideoLoaded"
         />
         <span class="preview-caption">{{ previewItem.name }}</span>
       </template>
       <template v-else-if="previewKind === 'audio'">
-        <audio class="preview-audio" controls :src="previewItem.url" />
+        <audio
+          :key="previewItem.id"
+          ref="audioRef"
+          class="preview-audio"
+          controls
+          :src="previewItem.url"
+          @loadeddata="onAudioLoaded"
+        />
         <span class="preview-caption">{{ previewItem.name }}</span>
       </template>
       <template v-else-if="previewKind === 'image'">

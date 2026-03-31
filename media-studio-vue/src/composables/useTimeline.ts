@@ -32,6 +32,10 @@ export function useTimeline() {
     clips.value = [];
   }
 
+  function removeClipsForMediaItem(mediaItemId: string) {
+    clips.value = clips.value.filter((c) => c.mediaItemId !== mediaItemId);
+  }
+
   function clipsForKind(kind: MediaChannelKind): TimelineClip[] {
     return clips.value.filter((c) => c.channelKind === kind);
   }
@@ -40,6 +44,7 @@ export function useTimeline() {
     clips,
     addClipsFromMediaItem,
     clearClips,
+    removeClipsForMediaItem,
     clipsForKind,
   };
 }

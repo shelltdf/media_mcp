@@ -12,6 +12,7 @@
 | 导入与 accept 列表 | `media-studio-vue/src/composables/useImportMedia.ts`、`mediaAccept.ts` |
 | 预览类型判定 | `media-studio-vue/src/composables/previewKind.ts` |
 | 媒体库面板 | `media-studio-vue/src/components/media/MediaLibraryPanel.vue` |
+| 转换对话框与演示任务 | `media-studio-vue/src/components/convert/ConvertDialog.vue`、`composables/useConversionJob.ts` |
 | 属性面板 | `media-studio-vue/src/components/properties/PropertiesPanel.vue` |
 | 通道推断 | `media-studio-vue/src/composables/mediaChannels.ts` |
 | 媒体元数据（时长等） | `media-studio-vue/src/composables/useMediaMetadata.ts` |

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { useI18n } from "vue-i18n";
+import type { MediaChannel } from "@/composables/mediaChannels";
 import { useMediaLibrary } from "@/composables/useMediaLibrary";
 import { useMediaMetadata } from "@/composables/useMediaMetadata";
 
@@ -31,6 +32,24 @@ const modifiedStr = computed(() => {
     return "—";
   }
 });
+
+function showMuxedDuration(ch: MediaChannel): boolean {
+  return (
+    (ch.kind === "video" || ch.kind === "audio") &&
+    meta.value.durationSec != null &&
+    Number.isFinite(meta.value.durationSec)
+  );
+}
+
+function showVideoResolution(ch: MediaChannel): boolean {
+  return (
+    ch.kind === "video" &&
+    meta.value.videoWidth != null &&
+    meta.value.videoHeight != null &&
+    meta.value.videoWidth > 0 &&
+    meta.value.videoHeight > 0
+  );
+}
 </script>
 
 <template>
@@ -65,13 +84,36 @@ const modifiedStr = computed(() => {
       </dl>
 
       <h4 class="ch-title">{{ t("properties.channels") }}</h4>
-      <ul class="ch-list">
-        <li v-for="ch in selectedItem.channels" :key="ch.id" class="ch-item">
-          <span class="ch-kind">{{ t(`channelKind.${ch.kind}`) }}</span>
-          <span class="ch-label">{{ ch.label }}</span>
-          <code class="ch-id">{{ ch.id }}</code>
-        </li>
-      </ul>
+      <div class="ch-cards">
+        <section
+          v-for="ch in selectedItem.channels"
+          :key="ch.id"
+          class="ch-card"
+        >
+          <header class="ch-card-head">
+            <span class="ch-kind">{{ t(`channelKind.${ch.kind}`) }}</span>
+            <span class="ch-label">{{ ch.label }}</span>
+            <code class="ch-id">{{ ch.id }}</code>
+          </header>
+          <dl class="ch-detail-dl">
+            <template
+              v-for="(row, idx) in ch.detailRows"
+              :key="`${ch.id}-row-${idx}`"
+            >
+              <dt>{{ t(row.labelKey) }}</dt>
+              <dd>{{ t(row.valueKey, row.params ?? {}) }}</dd>
+            </template>
+            <template v-if="showMuxedDuration(ch)">
+              <dt>{{ t("channelDetail.dtDuration") }}</dt>
+              <dd>{{ formatTime(meta.durationSec) }}</dd>
+            </template>
+            <template v-if="showVideoResolution(ch)">
+              <dt>{{ t("channelDetail.dtResolution") }}</dt>
+              <dd>{{ meta.videoWidth }} × {{ meta.videoHeight }}</dd>
+            </template>
+          </dl>
+        </section>
+      </div>
     </template>
   </div>
 </template>
@@ -119,36 +161,68 @@ const modifiedStr = computed(() => {
   color: var(--text-muted);
 }
 
-.ch-list {
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
+.ch-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.ch-item {
-  display: grid;
-  grid-template-columns: 52px 1fr auto;
-  gap: 4px;
+.ch-card {
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-workspace);
+  overflow: hidden;
+}
+
+.ch-card-head {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  padding: 4px 0;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--bg-toolbar);
   border-bottom: 1px solid var(--border);
   font-size: 11px;
 }
 
 .ch-kind {
   color: var(--accent);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .ch-label {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
   color: var(--text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .ch-id {
   font-size: 10px;
-  opacity: 0.75;
+  opacity: 0.8;
+}
+
+.ch-detail-dl {
+  margin: 0;
+  padding: 6px 8px 8px;
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 4px 8px;
+  align-items: start;
+  font-size: 11px;
+}
+
+.ch-detail-dl dt {
+  margin: 0;
+  color: var(--text-muted);
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.ch-detail-dl dd {
+  margin: 0;
+  line-height: 1.4;
+  word-break: break-word;
+  color: var(--text);
 }
 </style>

@@ -75,6 +75,16 @@ export function useMediaLibrary() {
     selectedItemId.value = null;
   }
 
+  /** 删除单条素材并释放对象 URL；若当前预览/选中指向该项则清空 */
+  function removeMediaItem(id: string) {
+    const item = mediaItems.value.find((m) => m.id === id);
+    if (!item) return;
+    revokeItemUrl(item);
+    mediaItems.value = mediaItems.value.filter((m) => m.id !== id);
+    if (previewItemId.value === id) previewItemId.value = null;
+    if (selectedItemId.value === id) selectedItemId.value = null;
+  }
+
   return {
     mediaItems,
     previewItemId,
@@ -86,5 +96,6 @@ export function useMediaLibrary() {
     setSelected,
     add,
     clear,
+    removeMediaItem,
   };
 }

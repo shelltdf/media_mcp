@@ -22,7 +22,8 @@
 ## 占位行为
 
 - 「导入媒体」（工具栏与 **媒体库** 内按钮）：`input[type=file]` `multiple`，`accept` 由 `src/composables/mediaAccept.ts` 定义（含 `audio/*`、`video/*`、`image/*` 及视频/音频/图片/MIDI/字幕等扩展名）。导入后为每条素材保留 `File` 与 `URL.createObjectURL`（`useMediaLibrary`），清空项目时 `revokeObjectURL`。
-- **媒体库交互**：**单击** 选中素材 → 右侧 **属性** Dock（`PropertiesPanel.vue`）展示文件名、MIME、大小、修改时间、可选 **时长/分辨率**（音视频由 `useMediaMetadata` 异步探测）、以及 **推断通道列表**（`mediaChannels.ts` / `inferMediaChannels`）。**双击** 同时选中并设为当前 **预览** 目标；客户区 **预览** 根据 `previewKind.ts` 使用 `<video>` / `<audio>` / `<img>` / 文本 `<pre>` 等。
+- **媒体库 · 转换为**：右键「转换为…」打开 `ConvertDialog.vue`，可设输出格式、音视频编码、分辨率、码率；**输出路径** 须通过 **「选择保存位置」**（优先 `showSaveFilePicker`，不支持时退化为文件选择器）指定文件名，并可编辑文本框微调；**开始转换** 后由 `useConversionJob` 驱动进度条（当前为 **演示用模拟进度**，未接真实编码器）；完成后进入 **完成** 提示页并写日志。预览区视频 **不强制静音**，尝试自动 `play()`；若浏览器拦截无用户手势的自动播放，用户可通过控件播放以听到声音。
+- **媒体库交互**：**单击** 选中素材 → 右侧 **属性** Dock（`PropertiesPanel.vue`）展示文件名、MIME、大小、修改时间、可选 **时长/分辨率**（音视频由 `useMediaMetadata` 异步探测）、以及 **推断通道列表**（`mediaChannels.ts` / `inferMediaChannels`）；每条通道含 **`detailRows`**（角色、编码线索、流序号、语言、说明等键值，见 `channelDetail.*` i18n），并在音视频可探测时于通道块内追加 **可探测时长/分辨率**。**双击** 同时选中并设为当前 **预览** 目标；客户区 **预览** 根据 `previewKind.ts` 使用 `<video>` / `<audio>` / `<img>` / 文本 `<pre>` 等。**右键菜单**（`MediaLibraryPanel.vue`）：预览、**原始导出**（本地下载）、复制文件名、删除（`removeMediaItem` + 时间线上去除关联片段）。
 - **拖拽到时间线**：自媒体库列表 **拖拽** 至时间线区域，`useTimeline` 按素材的 **通道**（视频 / 音频 / 字幕 / 数据）各生成一条 **片段**，显示在对应 **轨行**（`TimelinePanel.vue` 四行：video / audio / subtitle / data）。同素材可多次拖入以重复添加片段。
 - **时间线**：位于 **底部 Dock**；含轨行、片段块、缩放滑块占位。
 
